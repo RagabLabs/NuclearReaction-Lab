@@ -1,0 +1,12 @@
+import {test,expect} from 'vitest';
+import {threshold} from '../../src/physics/thresholds';
+import {mass,energy,degrees} from '../../src/physics/units';
+import {particle} from '../../src/physics/particles';
+import {fromCM} from '../../src/physics/kinematics';
+import {state,close} from './helpers';
+test('01 exact analytic endothermic threshold 11/6, not NR 5/3',()=>{const t=threshold(mass(2),mass(3),[mass(3),mass(3)]);close(t.exact,11/6);close(t.nonrelativistic,5/3);});
+test('01 exact threshold products retain recoil; CM direction undefined',()=>{const s=state([2,3,3,3],11/6),p=fromCM(s,degrees(90));expect(s.atThreshold).toBe(true);close(p.Tb,5/12);close(p.TB,5/12);expect(p.thetaCM).toBeNull();});
+test('01 below and above threshold',()=>{expect(()=>state([2,3,3,3],11/6-1e-7)).toThrow(/threshold/);expect(state([2,3,3,3],11/6+1e-7).pStar).toBeGreaterThan(0);});
+test('01 exothermic threshold is zero and final motion can be nonzero',()=>{close(threshold(mass(2),mass(3),[mass(2),mass(2)]).exact,0);close(state([2,3,2,2],0).pStar,1.5);});
+test('01 physical p+t threshold independently calculated with Decimal80',()=>{close(threshold(particle('p').mass,particle('t').mass,[particle('n').mass,particle('h').mass]).exact,1.0190474528620662,2e-10);});
+test('01 reject missing masses and invalid unit construction',()=>{expect(()=>threshold(mass(1),mass(2),[])).toThrow();expect(()=>mass(-1)).toThrow();expect(()=>energy(-1)).toThrow();expect(()=>particle('C-12-atom')).toThrow(/No verified/);});

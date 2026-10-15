@@ -1,0 +1,17 @@
+// @vitest-environment jsdom
+import React from 'react';
+import {test,expect,beforeEach,afterEach,vi} from 'vitest';
+import {render,screen,fireEvent,cleanup} from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
+import App from '../../src/App';
+beforeEach(()=>{localStorage.clear();location.hash='';window.scrollTo=vi.fn();global.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}} as any;});
+afterEach(cleanup);
+test('UI overview offers all ten distinct tools',()=>{render(<App/>);expect(screen.getByRole('heading',{name:/Understand the collision/})).toBeVisible();expect(document.querySelectorAll('.tool-card')).toHaveLength(10);});
+test('UI switches Arabic direction and color theme',()=>{render(<App/>);fireEvent.click(screen.getByRole('button',{name:'Switch language'}));expect(document.documentElement.dir).toBe('rtl');expect(screen.getByRole('heading',{name:/افهم التصادم/})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Toggle color theme'}));expect(document.documentElement.dataset.theme).toBe('light');});
+test('UI rejects nonconserving reaction selection',()=>{location.hash='analysis';render(<App/>);fireEvent.change(screen.getByLabelText('Observed product b'),{target:{value:'p'}});expect(screen.getByRole('alert')).toHaveTextContent(/violates electric-charge/);});
+test('UI inverse kinematics displays both physical branches',()=>{location.hash='analysis';render(<App/>);fireEvent.change(screen.getByLabelText('Documented teaching example'),{target:{value:'an'}});expect(document.querySelectorAll('.branch-card')).toHaveLength(2);expect(screen.getByText('high-energy')).toBeVisible();expect(screen.getByText('low-energy')).toBeVisible();});
+test('UI below-threshold reaction explains closed state',()=>{location.hash='analysis';render(<App/>);fireEvent.change(screen.getByLabelText('Documented teaching example'),{target:{value:'pt'}});fireEvent.change(screen.getByLabelText('Projectile kinetic energy'),{target:{value:'0.1'}});expect(screen.getByText('CLOSED')).toBeVisible();expect(screen.getByText(/Below the relativistic reaction threshold/)).toBeVisible();});
+test('UI missing radius and cross section remain explicit required inputs',()=>{location.hash='coulomb';const {unmount}=render(<App/>);expect(screen.getByRole('alert')).toHaveTextContent(/Contact radius is required/);unmount();location.hash='crosssection';render(<App/>);expect(screen.getByRole('alert')).toHaveTextContent(/Cross section for branch 1 is required/);});
+test('UI atomic record remains catalog-only and searchable',()=>{location.hash='data';render(<App/>);fireEvent.change(screen.getByRole('searchbox',{name:'Search nuclear data'}),{target:{value:'12C'}});expect(screen.getByText('12C')).toBeVisible();expect(screen.getByText('Catalog only')).toBeVisible();});
+test('UI empty required input is not turned into zero',()=>{location.hash='analysis';render(<App/>);fireEvent.change(screen.getByLabelText('Projectile kinetic energy'),{target:{value:''}});expect(screen.getByRole('alert')).toHaveTextContent(/required/);expect(screen.getByRole('button',{name:'PDF'})).toBeDisabled();});
+test('UI unrelated empty beam field does not block momentum tools',()=>{location.hash='analysis';render(<App/>);fireEvent.change(screen.getByLabelText('Projectile kinetic energy'),{target:{value:''}});fireEvent.click(screen.getByRole('button',{name:/07\s*Momentum transfer/}));expect(screen.queryByRole('alert')).toBeNull();expect(screen.getByText('Three-momentum transfer |q|')).toBeVisible();});

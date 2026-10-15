@@ -1,0 +1,12 @@
+import {test,expect} from 'vitest';
+import {energyFrom,energyTo,massFrom,massTo,momentumFrom,momentumTo,energy,mass,momentum,degrees,inDegrees,EV_J,C} from '../../src/physics/units';
+import {records,particle,quantumBalance,presets} from '../../src/physics/particles';
+import {close} from './helpers';
+test.each(['keV','GeV','J'] as const)('energy conversion %s roundtrip',u=>{const input=u==='J'?1e-13:1;close(energyTo(energyFrom(input,u),u),input,1e-12,1e-24);});
+test.each(['u','kg'] as const)('mass conversion %s roundtrip',u=>close(massTo(massFrom(u==='u'?1:1e-27,u),u),u==='u'?1:1e-27,1e-12,1e-40));
+test.each(['GeV/c','kg·m/s'] as const)('momentum conversion %s roundtrip',u=>close(momentumTo(momentumFrom(u==='GeV/c'?1:1e-20,u),u),u==='GeV/c'?1:1e-20,1e-12,1e-40));
+test('exact eV/J and c relationship',()=>{close(energyFrom(EV_J*1e6,'J'),1);close(massFrom(EV_J*1e6/(C*C),'kg'),1);close(momentumFrom(EV_J*1e6/C,'kg·m/s'),1);close(inDegrees(degrees(90)),90);});
+test('all data records retain original source and uncertainty; atoms not usable',()=>{expect(records).toHaveLength(18);expect(records.filter(r=>r.usableForKinematics)).toHaveLength(6);records.forEach(r=>{expect(r.referenceUrl).toMatch(/^https:/);expect(r.massUncertainty).toBeGreaterThanOrEqual(0);expect(r.retrievalDate).toMatch(/^2026-/);if(r.massType==='neutral-atom')expect(r.usableForKinematics).toBe(false);});});
+test.each(presets)('quantum conservation preset $id',p=>{const [a,A,b,B]=p.ids.map(particle);expect(quantumBalance({a,A,b,B,excitation:0}).passed).toBe(true);});
+test('reject intentional nonconserving channel',()=>expect(quantumBalance({a:particle('p'),A:particle('p'),b:particle('n'),B:particle('p'),excitation:0}).passed).toBe(false));
+test('quantity constructors reject nonfinite input',()=>{expect(()=>energy(NaN)).toThrow();expect(()=>mass(Infinity)).toThrow();expect(()=>momentum(Infinity)).toThrow();});

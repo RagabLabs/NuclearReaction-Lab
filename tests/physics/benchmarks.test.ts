@@ -1,0 +1,10 @@
+import {test,expect} from 'vitest';
+import oracle from '../independent-reference.json';
+import {particle} from '../../src/physics/particles';
+import {prepare,atLabAngle,fromCM} from '../../src/physics/kinematics';
+import {energy,degrees,norm} from '../../src/physics/units';
+import {state,close} from './helpers';
+test.each([1e-15,1e-12,1e-9,1e-8])('low-energy inverse elastic independently known two-branch solutions, T=%s',T=>{const s=state([4000,1000,4000,1000],T),branches=atLabAngle(s,degrees(0));expect(branches).toHaveLength(2);close(branches[0].Tb,T,2e-9,T*1e-11);close(branches[1].Tb,T*9e6/(25e6+2000*T),2e-9,T*1e-11);expect(atLabAngle(s,degrees(15))).toHaveLength(0);});
+test('independent Decimal p+t detector branches at T=1.1MeV, lab30',()=>{const s=prepare({a:particle('p').mass,A:particle('t').mass,b:particle('n').mass,B:particle('h').mass,kinetic:energy(1.1)}),actual=atLabAngle(s,degrees(30)),expected=oracle.physicalBenchmarks.p_t_to_n_h.T_1p1_theta_lab_30_branches;expect(actual).toHaveLength(2);actual.forEach((a,i)=>{close(a.Tb,Number(expected[i].outgoing_kinetic),5e-9);close(a.TB,Number(expected[i].recoil_kinetic),5e-9);});});
+test.each([0,90,180])('independent Decimal D+T fusion CM%s at Td0.1',a=>{const s=prepare({a:particle('d').mass,A:particle('t').mass,b:particle('n').mass,B:particle('alpha').mass,kinetic:energy(.1)}),actual=fromCM(s,degrees(a));const expected=(oracle.physicalBenchmarks.d_t_to_n_alpha['projectile_T_0.1'].cm_angles as any)[String(a)];close(actual.Tb,Number(expected.outgoing_kinetic));close(actual.TB,Number(expected.recoil_kinetic));});
+test('independent Decimal alpha+p inverse elastic two detector branches',()=>{const s=prepare({a:particle('alpha').mass,A:particle('p').mass,b:particle('alpha').mass,B:particle('p').mass,kinetic:energy(10)}),actual=atLabAngle(s,degrees(10));expect(actual).toHaveLength(2);actual.forEach((a,i)=>close(a.Tb,Number(oracle.physicalBenchmarks.alpha_p_inverse_elastic.theta_lab_10_branches[i].outgoing_kinetic),2e-9));});

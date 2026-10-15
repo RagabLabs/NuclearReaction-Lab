@@ -1,0 +1,11 @@
+import {test,expect} from 'vitest';
+import {angularJacobian,transformCrossSection} from '../../src/physics/crossSections';
+import {fromCM} from '../../src/physics/kinematics';
+import {degrees,radians} from '../../src/physics/units';
+import {state,close} from './helpers';
+test('09 independent exact branch J values 31 and225/31; sum1186/31',()=>{const r=transformCrossSection(state(),degrees(0),[1,1]);close(r.branches[0].jacobian!,31);close(r.branches[1].jacobian!,225/31);close(r.totalLab!,1186/31);});
+test('09 analytic Jacobian agrees with independent numerical angular derivative',()=>{const s=state(),u=.3,h=1e-5;const f=(x:number)=>Math.cos(fromCM(s,radians(Math.acos(x))).thetaLab!);const numeric=1/Math.abs((f(u+h)-f(u-h))/(2*h));close(angularJacobian(s,radians(Math.acos(u))).jacobian!,numeric,2e-9);});
+test('09 supplied unequal branch values remain distinct; inverse is branch-resolved',()=>{const r=transformCrossSection(state(),degrees(0),[2,3]);close(r.totalLab!,62+675/31);const back=transformCrossSection(state(),degrees(0),r.branches.map(x=>x.output!),'lab-to-cm');close(back.branches[0].output!,2);close(back.branches[1].output!,3);});
+test('09 singular fold and threshold withheld, never Infinity',()=>{expect(angularJacobian(state(),radians(Math.acos(-8/23))).status).toBe('singular');expect(angularJacobian(state([2,3,3,3],11/6),degrees(0)).status).toBe('undefined');});
+test('09 reject missing branch data, negative cross section and forbidden angle',()=>{expect(()=>transformCrossSection(state(),degrees(0),[1])).toThrow(/Supply 2/);expect(()=>transformCrossSection(state(),degrees(0),[-1,1])).toThrow();expect(()=>transformCrossSection(state(),degrees(90),[1])).toThrow();});
+test('09 zero supplied density transforms to zero',()=>expect(transformCrossSection(state(),degrees(0),[0,0]).totalLab).toBe(0));

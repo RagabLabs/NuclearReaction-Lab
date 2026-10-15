@@ -1,0 +1,13 @@
+import {test,expect} from 'vitest';
+import {coulomb,contactRadius} from '../../src/physics/coulomb';
+import {mass,energy} from '../../src/physics/units';
+import {COULOMB_MEV_FM,HBAR_C} from '../../src/physics/constants';
+import {close} from './helpers';
+test('10 exact-SI hbar*c avoids rounded-constant precision claim',()=>close(HBAR_C,197.32698045930247,1e-13));
+test('10 independent Decimal80 barrier, Gamow, finite-radius WKB model',()=>{const r=coulomb(1,1,5,energy(.01),mass(1000),mass(1000));close(r.barrier,.28799290937205337);close(r.eta!,1.1538127496229163);close(r.gamow!,.0007104447925719126,1e-12);close(r.wkb!,.003928088992695464,1e-12);});
+test('10 neutral entrance has no Coulomb penetration estimate',()=>{const r=coulomb(0,1,5,energy(1),mass(1000),mass(1000));expect(r.barrier).toBe(0);expect(r.gamow).toBeNull();});
+test('10 zero-energy model limit finite display and high-energy disabled',()=>{const zero=coulomb(1,1,5,energy(0),mass(1000),mass(1000));expect(zero.gamow).toBe(0);expect(zero.logGamow).toBeNull();expect(coulomb(1,1,5,energy(50),mass(1000),mass(1000)).gamow).toBeNull();});
+test('10 above contact barrier WKB estimate withheld',()=>expect(coulomb(1,1,5,energy(.3),mass(1000),mass(1000)).wkb).toBeNull());
+test('10 finite-radius WKB tends to point Gamow as R→0',()=>{const r=coulomb(1,1,1e-9,energy(.01),mass(1000),mass(1000));close(r.wkb!,r.gamow!,1e-4);});
+test('10 tiny nonzero energy and radius never emit Infinity',()=>{const r=coulomb(1,1,5,energy(1e-310),mass(1000),mass(1000));expect(r.eta).toBeNull();expect(r.turningRadius).toBeNull();expect(()=>coulomb(1,1,1e-320,energy(.01),mass(1000),mass(1000))).toThrow();});
+test('10 invalid charge, radius and A rejected',()=>{expect(()=>coulomb(-1,1,5,energy(1),mass(1),mass(1))).toThrow();expect(()=>coulomb(1,1,0,energy(1),mass(1),mass(1))).toThrow();expect(()=>contactRadius(0,1,1.2)).toThrow();});

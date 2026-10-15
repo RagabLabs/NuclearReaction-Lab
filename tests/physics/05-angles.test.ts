@@ -1,0 +1,12 @@
+import {test,expect} from 'vitest';
+import {transformAngle} from '../../src/physics/angles';
+import {fromCM,atLabAngle,allowedLabLimit} from '../../src/physics/kinematics';
+import {degrees,inDegrees} from '../../src/physics/units';
+import {state,close} from './helpers';
+test('05 independent double-valued lab angle asin(1/8)',()=>{const r=transformAngle(state(),degrees(Math.asin(1/8)*180/Math.PI),'lab');expect(r.solutions).toHaveLength(2);close(inDegrees(r.solutions[0].thetaCM!),41.06624891113795);close(inDegrees(r.solutions[1].thetaCM!),159.45546266048567);});
+test('05 maximum inverse-kinematics angle asin(1/4)',()=>{close(allowedLabLimit(state())!,Math.asin(1/4)*180/Math.PI);expect(atLabAngle(state(),degrees(15))).toHaveLength(0);});
+test('05 fold roots coalesce to one',()=>{const r=atLabAngle(state(),degrees(Math.asin(1/4)*180/Math.PI));expect(r).toHaveLength(1);close(r[0].Tb,36/23,1e-7);});
+test.each([0,45,90,135,180])('05 frame roundtrip includes original CM solution %s',d=>{const original=fromCM(state(),degrees(d));const inverse=atLabAngle(state(),original.thetaLab!);expect(inverse.some(s=>Math.abs(s.thetaCM!-degrees(d))<1e-8)).toBe(true);});
+test('05 threshold angle map is undefined',()=>expect(transformAngle(state([2,3,3,3],11/6),degrees(0),'cm').defined).toBe(false));
+test('05 zero lab momentum CM endpoint is explicitly undefined',()=>expect(transformAngle(state([1,1,1,1],6),degrees(180),'cm').defined).toBe(false));
+test('05 invalid degree units rejected',()=>expect(()=>degrees(-1)).toThrow());

@@ -1,0 +1,12 @@
+import {test,expect} from 'vitest';
+import {centerOfMass,stationaryCM,invariant,boost,onShell,velocity} from '../../src/physics/relativity';
+import {mass,energy,degrees,vec,norm} from '../../src/physics/units';
+import {close} from './helpers';
+test('02 independent stationary equal-mass invariant s=6',()=>{const r=centerOfMass(mass(1),mass(1),energy(1));close(r.s,6);close(r.total,Math.sqrt(6));close(r.kinetic,Math.sqrt(6)-2);});
+test('02 opposite moving equal beams have W=4 and kinetic=2',()=>{const r=centerOfMass(mass(1),mass(1),energy(1),energy(1),degrees(180));close(r.s,16);close(r.total,4);close(r.kinetic,2);close(norm(r.momentum),0);});
+test('02 co-moving beams have no relative kinetic energy',()=>{const r=centerOfMass(mass(1),mass(1),energy(6),energy(6),degrees(0));close(r.s,4);close(r.kinetic,0);});
+test('02 low-energy CM avoids subtractive cancellation',()=>{close(stationaryCM(mass(1e6),mass(1e6),energy(1e-8)).kinetic,5e-9,1e-9,1e-20);});
+test('02 general CM retains kinetic energy 5e-16 at zero target T',()=>close(centerOfMass(mass(1000),mass(1000),energy(1e-15)).kinetic,5e-16,1e-12,1e-28));
+test('02 Lorentz invariant round trip independent vector',()=>{const v=onShell(mass(4),vec(3,4,0)),b=boost(v,[0,0,0.6]),back=boost(b,[0,0,-0.6]);close(invariant(v),16);close(invariant(b),16);back.p.forEach((n,i)=>close(n,v.p[i]));close(back.E,v.E);});
+test('02 invalid boost and angle rejected',()=>{expect(()=>boost(onShell(mass(1),vec(0,0,0)),[1,0,0])).toThrow();expect(()=>degrees(181)).toThrow();});
+test('02 unresolved invariant is rejected; known-mass gamma stays reliable',()=>{const v=onShell(mass(1),vec(1e8,0,0));expect(()=>invariant(v)).toThrow(/resolution/);close(velocity(v,mass(1)).gamma,1e8,1e-12);});

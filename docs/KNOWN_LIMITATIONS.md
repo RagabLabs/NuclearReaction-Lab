@@ -1,0 +1,16 @@
+# Known limitations of v1.0.0
+
+1. Full two-body lab-angle/threshold/density mapping supports a stationary target only. Moving initial targets are supported solely in CM energy and explicit-vector recoil. This restriction is visible in the methods.
+2. Six directly evaluated bare nuclei are selectable. Twelve AME atomic masses are catalog-only; their nuclear masses are deliberately unavailable without verified isotope-specific electron binding corrections. Heavy nuclei can be entered as explicitly unverified custom bare masses, with their known Z,A represented by the selected species; arbitrary custom Z,A species creation is not implemented. Thus unknown heavy channels cannot be completed by selecting an unrelated light species.
+3. The custom-mass editor changes masses of already selected identified species; it is not a general nuclide identity importer. Analytical heavy-mass tests are labelled synthetic mathematical benchmarks, not a claim of a bundled heavy-nucleus reaction database.
+4. There are no experimental cross sections or evaluated excitation-level tables. EXFOR/NNDC were consulted as reference services, not used to invent numerical records. Excitation and cross-section values are user inputs.
+5. No joint mass uncertainty is propagated because covariances are not imported. Individual uncertainties are retained; no independence assumption is silently made.
+6. Angular folds have no finite pointwise Jacobian. A finite detector-bin integration would require a supplied continuous angular distribution and a separate reviewed implementation. Threshold and zero-momentum directions are undefined.
+7. Coulomb estimates omit nuclear potential, angular momentum beyond l=0, screening, resonances, spin and actual reaction strength. Software validity cutoffs do not supply a quantitative experimental error estimate. Above-barrier finite-radius WKB is withheld.
+8. Three-dimensional arbitrary incident directions are represented in the CM calculator by an opening angle and a selected plane. Full detector azimuthal mapping for a non-collinear moving target is not implemented.
+9. Photons, leptonic channels, multiparticle final states, target energy loss, detector efficiency and physical spin/parity selection rules are outside scope. Charge and baryon checks alone cannot prove a dynamically allowed channel.
+10. UI navigation and primary labels support English/Arabic/RTL; detailed scientific assumptions, method text and source records remain in English. PDF reports are English only, with readable ASCII formula source. KaTeX equations are rendered in the app; PDF output embeds LaTeX text rather than fully typeset mathematics.
+11. PNG export rasterizes a scientific chart only. It is unavailable on calculators without a rendered chart. PDF/CSV reports use the current engine snapshot and do not embed every interactive plot.
+12. GitHub workflows have not been run on GitHub and no deployment has occurred. Local production and portable builds plus all recorded checks are provided for review. External scientific certification/review remains outstanding.
+
+See `docs/TEST_REPORT.md` for executed counts and any final verification gaps. A restriction above is never replaced with invented data or a guessed cross section.

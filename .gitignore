@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-portable/
+playwright-report/
+test-results/
+.cache/
+.openai/
+*.log

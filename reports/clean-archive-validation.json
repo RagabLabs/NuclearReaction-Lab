@@ -1,0 +1,12 @@
+{
+  "checkedUTC": "2026-10-14T15:14:33.813649+00:00",
+  "method": "Source ZIP extracted into a new directory, npm ci --offline, typecheck, full Vitest, production build, portable build, DOM build verification",
+  "dependencyInstallation": "PASS",
+  "typecheck": "PASS",
+  "executedTests": 133,
+  "passedTests": 133,
+  "failedTests": 0,
+  "productionBuild": "PASS",
+  "portableBuild": "PASS",
+  "note": "Repeated same assertions to verify packaging; not additional distinct tests. Source science and UI unchanged; final source constant metadata additionally preserves upstream ellipsis indicators."
+}

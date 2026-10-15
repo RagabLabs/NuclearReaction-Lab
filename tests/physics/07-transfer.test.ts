@@ -1,0 +1,10 @@
+import {test,expect} from 'vitest';
+import {momentumTransfer} from '../../src/physics/momentum';
+import {vec,energy} from '../../src/physics/units';
+import {boost} from '../../src/physics/relativity';
+import {close} from './helpers';
+test('07 reference q=(-4,0,2), norm=sqrt20 and t=-20',()=>{const r=momentumTransfer(vec(0,0,5),vec(4,0,3),'lab',energy(10),energy(10));expect(r.q).toEqual([-4,0,2]);close(r.magnitude,Math.sqrt(20));close(r.t!,-20);});
+test('07 t requires both total energies',()=>{expect(momentumTransfer(vec(0,0,1),vec(0,0,0),'cm').t).toBeNull();expect(()=>momentumTransfer(vec(0,0,1),vec(0,0,0),'lab',energy(2))).toThrow();});
+test('07 zero transfer is exactly zero',()=>{const r=momentumTransfer(vec(1,2,3),vec(1,2,3),'lab',energy(5),energy(5));expect(r.magnitude).toBe(0);expect(r.t).toBe(0);});
+test('07 t is invariant; three-vector q is frame dependent',()=>{const a={E:energy(10),p:vec(0,0,5)},b={E:energy(10),p:vec(4,0,3)},aa=boost(a,[0,0,.5]),bb=boost(b,[0,0,.5]);const x=momentumTransfer(a.p,b.p,'cm',a.E,b.E),y=momentumTransfer(aa.p,bb.p,'lab',aa.E,bb.E);close(x.t!,y.t!);expect(x.magnitude).not.toBeCloseTo(y.magnitude,8);});
+test('07 invalid vector rejected',()=>expect(()=>vec(Infinity,0,0)).toThrow());
